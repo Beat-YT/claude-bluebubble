@@ -1,5 +1,6 @@
 import http from 'node:http';
 import { normalizeAddress } from './config.js';
+import { log } from './log.js';
 
 interface Attachment {
   guid: string;
@@ -17,6 +18,8 @@ export interface InboundMessage {
 
 export interface WebhookServerOptions {
   port: number;
+  host: string;
+  password: string | undefined;
   allowedSenders: Set<string>;
   onMessage: (msg: InboundMessage) => void;
 }
@@ -29,6 +32,15 @@ export function startWebhookServer(opts: WebhookServerOptions): http.Server {
       res.writeHead(404);
       res.end();
       return;
+    }
+
+    if (opts.password) {
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      if (url.searchParams.get('pwd') !== opts.password) {
+        res.writeHead(401);
+        res.end();
+        return;
+      }
     }
 
     const chunks: Buffer[] = [];
@@ -53,12 +65,12 @@ export function startWebhookServer(opts: WebhookServerOptions): http.Server {
       try {
         event = JSON.parse(Buffer.concat(chunks).toString());
       } catch {
-        process.stderr.write('[bluebubbles] webhook: invalid JSON\n');
+        log.warn('webhook', 'invalid JSON payload');
         return;
       }
 
       if (event.type === 'hello-world') {
-        process.stderr.write('[bluebubbles] webhook: hello-world received\n');
+        log.debug('webhook', 'hello-world received');
         return;
       }
 
@@ -75,7 +87,7 @@ export function startWebhookServer(opts: WebhookServerOptions): http.Server {
       if (opts.allowedSenders.size > 0) {
         const normalized = normalizeAddress(sender);
         if (!opts.allowedSenders.has(normalized)) {
-          process.stderr.write(`[bluebubbles] webhook: dropping message from non-allowlisted sender: ${sender}\n`);
+          log.warn('webhook', `dropping message from non-allowlisted sender: ${sender}`);
           return;
         }
       }
@@ -93,8 +105,8 @@ export function startWebhookServer(opts: WebhookServerOptions): http.Server {
     });
   });
 
-  server.listen(opts.port, () => {
-    process.stderr.write(`[bluebubbles] webhook listening on port ${opts.port}\n`);
+  server.listen(opts.port, opts.host, () => {
+    log.info('webhook', `listening on ${opts.host}:${opts.port}`);
   });
 
   return server;

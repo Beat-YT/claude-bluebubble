@@ -3,6 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import fs from 'node:fs';
 import type { BlueBubblesClient } from './bluebubbles.js';
+import { log } from './log.js';
 
 const INSTRUCTIONS = `You are connected to iMessage via a BlueBubbles bridge.
 
@@ -31,28 +32,41 @@ export function createChannel(bb: BlueBubblesClient, callbacks: ChannelCallbacks
     },
   );
 
-  mcp.tool(
+  mcp.registerTool(
     'reply',
-    'Send a text message back over iMessage',
-    { chat_id: z.string(), text: z.string() },
+    {
+      description: 'Send a text message back over iMessage',
+      inputSchema: { chat_id: z.string(), text: z.string() },
+    },
     async ({ chat_id, text }) => {
       await bb.sendText(chat_id, text);
       callbacks.onReply(chat_id);
-      return { content: [{ type: 'text' as const, text: 'sent' }] };
+
+      return {
+        content: [{ type: 'text' as const, text: 'sent' }]
+      };
     },
   );
 
-  mcp.tool(
+  mcp.registerTool(
     'send_file',
-    'Send a file over iMessage',
-    { chat_id: z.string(), file_path: z.string() },
+    {
+      description: 'Send a file over iMessage',
+      inputSchema: { chat_id: z.string(), file_path: z.string() },
+    },
     async ({ chat_id, file_path }) => {
       if (!fs.existsSync(file_path)) {
-        return { content: [{ type: 'text' as const, text: `file not found: ${file_path}` }], isError: true };
+        return {
+          content: [{ type: 'text', text: `file not found: ${file_path}` }],
+          isError: true
+        };
       }
+
       await bb.sendAttachment(chat_id, file_path);
       callbacks.onReply(chat_id);
-      return { content: [{ type: 'text' as const, text: `sent ${file_path}` }] };
+      return {
+        content: [{ type: 'text', text: `sent ${file_path}` }]
+      };
     },
   );
 
@@ -78,7 +92,7 @@ export function createChannel(bb: BlueBubblesClient, callbacks: ChannelCallbacks
   async function connect() {
     const transport = new StdioServerTransport();
     await mcp.connect(transport);
-    process.stderr.write('[bluebubbles] MCP channel connected\n');
+    log.info('mcp', 'channel connected');
   }
 
   return { connect, forwardMessage };

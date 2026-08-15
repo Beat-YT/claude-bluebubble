@@ -3,6 +3,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { log } from './log.js';
 
 export interface BlueBubblesConfig {
   serverUrl: string;
@@ -91,7 +92,7 @@ export class BlueBubblesClient {
     try {
       await this.request(`/chat/${encodeURIComponent(chatGuid)}/typing`, { method: 'POST' });
     } catch (e) {
-      process.stderr.write(`[bluebubbles] startTyping failed (non-fatal): ${e}\n`);
+      log.debug('typing', `startTyping failed (non-fatal): ${e}`);
     }
   }
 
@@ -99,7 +100,7 @@ export class BlueBubblesClient {
     try {
       await this.request(`/chat/${encodeURIComponent(chatGuid)}/typing`, { method: 'DELETE' });
     } catch (e) {
-      process.stderr.write(`[bluebubbles] stopTyping failed (non-fatal): ${e}\n`);
+      log.debug('typing', `stopTyping failed (non-fatal): ${e}`);
     }
   }
 
@@ -107,7 +108,7 @@ export class BlueBubblesClient {
     try {
       await this.request(`/chat/${encodeURIComponent(chatGuid)}/read`, { method: 'POST' });
     } catch (e) {
-      process.stderr.write(`[bluebubbles] markRead failed (non-fatal): ${e}\n`);
+      log.debug('api', `markRead failed (non-fatal): ${e}`);
     }
   }
 
@@ -115,7 +116,7 @@ export class BlueBubblesClient {
     interface Webhook { id: number; url: string; events: string[] }
     const existing = await this.request<Webhook[]>('/webhook');
     if (existing.some(w => w.url === url)) {
-      process.stderr.write(`[bluebubbles] webhook already registered: ${url}\n`);
+      log.info('webhook', `already registered: ${url}`);
       return;
     }
 
@@ -124,6 +125,6 @@ export class BlueBubblesClient {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url, events: ['new-message'] }),
     });
-    process.stderr.write(`[bluebubbles] webhook registered: ${url}\n`);
+    log.info('webhook', `registered: ${url}`);
   }
 }

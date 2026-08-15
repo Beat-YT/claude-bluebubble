@@ -2,6 +2,7 @@ import { loadConfig } from './config.js';
 import { BlueBubblesClient } from './bluebubbles.js';
 import { startWebhookServer } from './webhook.js';
 import { createChannel } from './channel.js';
+import { log } from './log.js';
 
 const TYPING_TIMEOUT_MS = 2 * 60 * 1000;
 
@@ -34,6 +35,8 @@ await channel.connect();
 
 startWebhookServer({
   port: config.webhookPort,
+  host: config.webhookHost,
+  password: config.webhookPassword,
   allowedSenders: config.allowedSenders,
   onMessage: async (msg) => {
     try {
@@ -52,7 +55,7 @@ startWebhookServer({
           const localPath = await bb.downloadAttachment(att.guid, att.transferName);
           attachmentPaths.push(localPath);
         } catch (e) {
-          process.stderr.write(`[bluebubbles] failed to download attachment ${att.guid}: ${e}\n`);
+          log.error('attachment', `failed to download ${att.guid}: ${e}`);
         }
       }
 
@@ -63,7 +66,7 @@ startWebhookServer({
         attachmentPaths,
       });
     } catch (e) {
-      process.stderr.write(`[bluebubbles] error processing message: ${e}\n`);
+      log.error('message', `error processing: ${e}`);
     }
   },
 });
@@ -71,8 +74,8 @@ startWebhookServer({
 // Startup handshake — non-fatal so the MCP server works even if the Mac is offline
 try {
   await bb.ping();
-  process.stderr.write('[bluebubbles] connected to BlueBubbles server\n');
+  log.info('api', 'connected to BlueBubbles server');
   await bb.registerWebhook(config.webhookPublicUrl);
 } catch (e) {
-  process.stderr.write(`[bluebubbles] startup handshake failed (will retry on first message): ${e}\n`);
+  log.warn('api', `startup handshake failed (will retry on first message): ${e}`);
 }

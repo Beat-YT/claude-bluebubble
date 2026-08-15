@@ -46,7 +46,9 @@ Then text the Mac's iMessage account from an allowlisted sender — the message 
 | `BB_SERVER_URL` | yes | — | BlueBubbles server, e.g. `http://192.168.2.175:1234` |
 | `BB_PASSWORD` | yes | — | BlueBubbles server password |
 | `WEBHOOK_PORT` | no | `8787` | Local port for the webhook listener |
+| `WEBHOOK_HOST` | no | `127.0.0.1` | Bind address (`127.0.0.1` = localhost only, `0.0.0.0` = all interfaces) |
 | `WEBHOOK_PUBLIC_URL` | no | auto-detected LAN IPv4 | URL the Mac uses to reach this machine |
+| `WEBHOOK_PWD` | no | — | Password appended as `?pwd=` to the webhook URL; rejects requests without it |
 | `ALLOWED_SENDERS` | no (but do it) | accept all + loud warning | Comma-separated phone numbers/emails allowed to talk to Claude |
 | `ATTACHMENTS_DIR` | no | `./attachments` | Where inbound attachments are saved |
 
@@ -59,7 +61,7 @@ curl -X POST localhost:8787/webhook -H "Content-Type: application/json" -d '{"ty
 
 ## Security
 
-The webhook listener is **plain HTTP with no authentication**. Anyone on your LAN can POST fake messages to it. Only run this on a trusted network.
+The webhook listener is **plain HTTP**. Set `WEBHOOK_PWD` to require a password on every request, and/or bind to `127.0.0.1` via `WEBHOOK_HOST` if the BlueBubbles server runs on the same machine. Without either, anyone on your LAN can POST fake messages.
 
 ## v2 ideas (not implemented)
 
