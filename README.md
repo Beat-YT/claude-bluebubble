@@ -29,6 +29,27 @@ npm run build
 
 > **Rebuild after every source change** — Claude Code runs the compiled `dist/index.js`, not the TypeScript sources.
 
+## Register the MCP server
+
+Claude Code discovers the channel via a `.mcp.json` entry. The repo ships one, but you can also add it to your project or user-level config:
+
+```json
+{
+  "mcpServers": {
+    "bluebubbles": {
+      "command": "node",
+      "args": ["/absolute/path/to/claude-bluebubble/dist/index.js"]
+    }
+  }
+}
+```
+
+Place this in:
+- **Project-level**: `.mcp.json` in your project root (already included in this repo)
+- **User-level**: `~/.claude/.mcp.json` (available across all projects)
+
+The `server:bluebubbles` name in the run command below maps to the `"bluebubbles"` key in this file.
+
 ## Run
 
 ```sh
