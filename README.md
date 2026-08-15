@@ -57,6 +57,10 @@ npm run dev   # or: node dist/index.js
 curl -X POST localhost:8787/webhook -H "Content-Type: application/json" -d '{"type":"hello-world","data":{}}'
 ```
 
+## Security
+
+The webhook listener is **plain HTTP with no authentication**. Anyone on your LAN can POST fake messages to it. Only run this on a trusted network.
+
 ## v2 ideas (not implemented)
 
 - Threaded replies (`selectedMessageGuid`), tapbacks, permission relay (approve tool calls by texting `yes <id>`).

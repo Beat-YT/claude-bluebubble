@@ -3,7 +3,13 @@
   "version": "0.1.0",
   "description": "Claude Code channel bridging iMessage via a BlueBubbles server",
   "type": "module",
-  "private": true,
+  "license": "MIT",
+  "author": "Beat YT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Beat-YT/claude-bluebubble"
+  },
+  "keywords": ["claude-code", "imessage", "bluebubbles", "mcp", "channel"],
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
