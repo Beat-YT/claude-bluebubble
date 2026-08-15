@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bluebubbles": {
+      "command": "node",
+      "args": ["dist/index.js"]
+    }
+  }
+}
