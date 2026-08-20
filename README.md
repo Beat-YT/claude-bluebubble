@@ -23,7 +23,6 @@ iMessage ⇄ BlueBubbles server (Mac) ⇄ this channel ⇄ Claude Code session
 
 ```sh
 npm install
-cp .env.example .env   # then fill in BB_SERVER_URL, BB_PASSWORD, ALLOWED_SENDERS
 npm run build
 ```
 
@@ -31,14 +30,19 @@ npm run build
 
 ## Register the MCP server
 
-Claude Code discovers the channel via a `.mcp.json` entry. The repo ships one, but you can also add it to your project or user-level config:
+Claude Code discovers the channel via a `.mcp.json` entry. Since this is a Claude Code MCP server, pass configuration directly in `env` — no `.env` file needed:
 
 ```json
 {
   "mcpServers": {
     "bluebubbles": {
       "command": "node",
-      "args": ["/absolute/path/to/claude-bluebubble/dist/index.js"]
+      "args": ["/absolute/path/to/claude-bluebubble/dist/index.js"],
+      "env": {
+        "BB_SERVER_URL": "http://192.168.2.175:1234",
+        "BB_PASSWORD": "your-server-password",
+        "ALLOWED_SENDERS": "+1234567890,you@example.com"
+      }
     }
   }
 }
@@ -60,7 +64,9 @@ claude --dangerously-load-development-channels server:bluebubbles
 
 Then text the Mac's iMessage account from an allowlisted sender — the message appears in your session and Claude can reply.
 
-## Configuration (`.env`)
+## Configuration
+
+All configuration is passed as environment variables — either via the `env` block in `.mcp.json` (recommended) or a `.env` file in the project root.
 
 | Var | Required | Default | Meaning |
 |---|---|---|---|

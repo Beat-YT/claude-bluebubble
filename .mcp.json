@@ -2,7 +2,12 @@
   "mcpServers": {
     "bluebubbles": {
       "command": "node",
-      "args": ["dist/index.js"]
+      "args": ["dist/index.js"],
+      "env": {
+        "BB_SERVER_URL": "http://127.0.0.1:1234",
+        "BB_PASSWORD": "your-server-password",
+        "ALLOWED_SENDERS": "+1234567890,you@example.com"
+      }
     }
   }
 }
