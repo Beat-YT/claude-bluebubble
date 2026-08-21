@@ -70,21 +70,29 @@ export function createChannel(bb: BlueBubblesClient, callbacks: ChannelCallbacks
     },
   );
 
-  async function forwardMessage(msg: { chatGuid: string; sender: string; text: string | null; attachmentPaths: string[] }) {
+  async function forwardMessage(msg: { chatGuid: string; sender: string; text: string | null; dateCreated: number | null; attachmentPaths: string[] }) {
     const lines: string[] = [];
     if (msg.text) lines.push(msg.text);
     for (const p of msg.attachmentPaths) {
       lines.push(`[attachment saved: ${p}]`);
     }
 
+    const meta: Record<string, string> = {
+      chat_id: msg.chatGuid,
+      sender: msg.sender,
+    };
+
+    if (msg.dateCreated) {
+      const d = new Date(msg.dateCreated);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      meta.time = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
     await mcp.server.notification({
       method: 'notifications/claude/channel',
       params: {
         content: lines.join('\n'),
-        meta: {
-          chat_id: msg.chatGuid,
-          sender: msg.sender,
-        },
+        meta,
       },
     });
   }

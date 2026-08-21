@@ -13,6 +13,7 @@ export interface InboundMessage {
   chatGuid: string;
   sender: string;
   text: string | null;
+  dateCreated: number | null;
   attachments: Attachment[];
 }
 
@@ -97,11 +98,12 @@ export function startWebhookServer(opts: WebhookServerOptions): http.Server {
       if (!chatGuid) return;
 
       const text = (data.text as string | null) ?? null;
+      const dateCreated = typeof data.dateCreated === 'number' ? data.dateCreated : null;
       const attachments = (data.attachments as Attachment[] | undefined) ?? [];
 
       if (!text && attachments.length === 0) return;
 
-      opts.onMessage({ chatGuid, sender, text, attachments });
+      opts.onMessage({ chatGuid, sender, text, dateCreated, attachments });
     });
   });
 

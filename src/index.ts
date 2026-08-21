@@ -63,6 +63,7 @@ startWebhookServer({
         chatGuid: msg.chatGuid,
         sender: msg.sender,
         text: msg.text,
+        dateCreated: msg.dateCreated,
         attachmentPaths,
       });
     } catch (e) {
